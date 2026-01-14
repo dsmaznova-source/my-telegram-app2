@@ -3,231 +3,187 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Подборка от застройщика</title>
+  <title>Жилые комплексы</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f9f9f9;
+      background: #ffffff;
       margin: 0;
-      padding: 20px;
-      color: #333;
+      padding: 0;
+      color: #000;
     }
     .container {
-      max-width: 500px;
+      max-width: 600px;
       margin: 0 auto;
-      background: white;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      padding: 16px;
     }
-    h2 {
-      font-size: 22px;
+    .header {
+      text-align: center;
+      padding: 16px 0;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      font-size: 20px;
       font-weight: 600;
       color: #0057b8;
-      margin: 0 0 24px;
-      text-align: center;
+      margin: 0;
     }
-    .step { display: none; }
-    .step.active { display: block; }
-    input, select, button {
+    .complex-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+      cursor: pointer;
+    }
+    .complex-card img {
       width: 100%;
-      padding: 14px;
-      margin: 10px 0;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      font-size: 16px;
-      box-sizing: border-box;
+      height: 140px;
+      object-fit: cover;
     }
-    button {
+    .card-content {
+      padding: 14px;
+    }
+    .card-title {
+      font-weight: 600;
+      font-size: 16px;
+      margin: 0 0 6px;
+      color: #000;
+    }
+    .card-desc {
+      font-size: 14px;
+      color: #666;
+      margin: 0 0 10px;
+    }
+    .btn {
       background: #0057b8;
       color: white;
       border: none;
-      font-weight: 600;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      width: 100%;
       cursor: pointer;
-      margin-top: 20px;
     }
-    button:hover { background: #004694; }
-    .progress {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 24px;
-      position: relative;
+    .back-btn {
+      background: #f0f0f0;
+      color: #0057b8;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: 500;
     }
-    .progress::before {
-      content: '';
-      position: absolute;
-      top: 8px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: #e0e0e0;
-      z-index: 1;
-    }
-    .dot {
-      width: 16px;
-      height: 16px;
-      background: #e0e0e0;
-      border-radius: 50%;
-      position: relative;
-      z-index: 2;
-    }
-    .dot.active { background: #0057b8; }
+    #detail-view { display: none; }
+    #loading { text-align: center; padding: 40px; color: #888; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="progress">
-      <div class="dot active" id="dot1"></div>
-      <div class="dot" id="dot2"></div>
-      <div class="dot" id="dot3"></div>
-      <div class="dot" id="dot4"></div>
+  <div class="container" id="catalog-view">
+    <div class="header">
+      <h1>Жилые комплексы</h1>
     </div>
+    <div id="loading">Загрузка...</div>
+    <div id="complexes-list"></div>
+  </div>
 
-    <div class="step active" id="step1">
-      <h2>Шаг 1 из 4</h2>
-      <input type="text" id="budget" placeholder="Ваш бюджет (например, до 15 млн ₽)">
-      <button onclick="nextStep(1)">Далее</button>
+  <div class="container" id="detail-view">
+    <div class="back-btn" onclick="showCatalog()">← Назад к каталогу</div>
+    <div class="header">
+      <h1 id="detail-title">Загрузка...</h1>
     </div>
-
-    <div class="step" id="step2">
-      <h2>Шаг 2 из 4</h2>
-      <select id="district">
-        <option value="">Выберите район</option>
-        <option value="Центр">Центр</option>
-        <option value="Хамовники">Хамовники</option>
-        <option value="Беговой">Беговой</option>
-        <option value="Ново-Переделкино">Ново-Переделкино</option>
-        <option value="Другой">Другой</option>
-      </select>
-      <button onclick="prevStep(2)">Назад</button>
-      <button onclick="nextStep(2)" style="margin-top: 10px;">Далее</button>
-    </div>
-
-    <div class="step" id="step3">
-      <h2>Шаг 3 из 4</h2>
-      <select id="rooms">
-        <option value="">Количество комнат</option>
-        <option value="1">1-комнатная</option>
-        <option value="2">2-комнатная</option>
-        <option value="3">3-комнатная</option>
-        <option value="4+">4+ комнат</option>
-        <option value="Студия">Студия</option>
-      </select>
-      <button onclick="prevStep(3)">Назад</button>
-      <button onclick="nextStep(3)" style="margin-top: 10px;">Далее</button>
-    </div>
-
-    <div class="step" id="step4">
-      <h2>Шаг 4 из 4</h2>
-      <input type="text" id="name" placeholder="Ваше имя">
-      <input type="tel" id="phone" placeholder="Телефон">
-      <button onclick="prevStep(4)">Назад</button>
-      <button onclick="submitForm()" style="margin-top: 10px;">Получить подборку</button>
-    </div>
+    <img id="detail-img" src="" style="width:100%; border-radius:12px; height:200px; object-fit:cover;">
+    <p id="detail-info" style="margin:16px 0; color:#666;"></p>
+    
+    <input type="text" id="name" placeholder="Ваше имя" style="width:100%; padding:12px; margin:8px 0; border:1px solid #ddd; border-radius:8px;">
+    <input type="tel" id="phone" placeholder="Телефон" style="width:100%; padding:12px; margin:8px 0; border:1px solid #ddd; border-radius:8px;">
+    <button class="btn" onclick="submitLead()">Забронировать показ</button>
   </div>
 
   <script>
-    let formData = {};
+    // === ЗАМЕНИ ЭТО ===
+    const FEED_URL = 'https://ai.allio.agency/feeds/vk_san_13.xml'; // ← сюда вставь URL твоего фида
+    const TELEGRAM_CONFIG = {
+      botToken: '8586234781:AAE87Am-arpkyk4tMcN44SYqSMJ8XDYrJKo',
+      chatId: '896319728'
+    };
+    // ===================
 
-    function updateDots(currentStep) {
-      for (let i = 1; i <= 4; i++) {
-        document.getElementById(`dot${i}`).classList.toggle('active', i <= currentStep);
+    let complexes = [];
+    let selectedComplex = null;
+
+    async function loadComplexes() {
+      try {
+        const response = await fetch(FEED_URL);
+        complexes = await response.json();
+        renderCatalog();
+      } catch (e) {
+        document.getElementById('loading').innerText = 'Ошибка загрузки данных';
+        console.error(e);
       }
     }
 
-    function showStep(step) {
-      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-      document.getElementById(`step${step}`).classList.add('active');
-      updateDots(step);
+    function renderCatalog() {
+      const listEl = document.getElementById('complexes-list');
+      const loadingEl = document.getElementById('loading');
+      loadingEl.style.display = 'none';
+
+      listEl.innerHTML = complexes.map(c => `
+        <div class="complex-card" onclick="showDetail(${JSON.stringify(c)})">
+          <img src="${c.image || ''}" alt="${c.title || ''}">
+          <div class="card-content">
+            <h3 class="card-title">${c.title || 'Без названия'}</h3>
+            <p class="card-desc">${c.district || ''} · ${c.status || ''}</p>
+            <button class="btn">Подробнее</button>
+          </div>
+        </div>
+      `).join('');
     }
 
-    function nextStep(currentStep) {
-      const stepId = `step${currentStep}`;
-      const inputs = document.getElementById(stepId).querySelectorAll('input, select');
-      let valid = true;
+    function showDetail(complex) {
+      selectedComplex = complex;
+      document.getElementById('detail-title').innerText = complex.title || 'ЖК';
+      document.getElementById('detail-img').src = complex.image || '';
+      document.getElementById('detail-info').innerText = `${complex.district || ''} · ${complex.status || ''}`;
 
-      inputs.forEach(input => {
-        if (!input.value.trim() && input.hasAttribute('required')) {
-          valid = false;
-        }
-      });
-
-      // Для шага 1: бюджет не обязателен, но желателен
-      if (currentStep === 1) {
-        formData.budget = document.getElementById('budget').value || 'Не указан';
-        showStep(2);
-        return;
-      }
-
-      // Шаг 2: район
-      if (currentStep === 2) {
-        const district = document.getElementById('district').value;
-        if (!district) {
-          Telegram.WebApp.showAlert('Выберите район');
-          return;
-        }
-        formData.district = district;
-        showStep(3);
-        return;
-      }
-
-      // Шаг 3: комнаты
-      if (currentStep === 3) {
-        const rooms = document.getElementById('rooms').value;
-        if (!rooms) {
-          Telegram.WebApp.showAlert('Выберите количество комнат');
-          return;
-        }
-        formData.rooms = rooms;
-        showStep(4);
-        return;
-      }
+      document.getElementById('catalog-view').style.display = 'none';
+      document.getElementById('detail-view').style.display = 'block';
     }
 
-    function prevStep(currentStep) {
-      showStep(currentStep - 1);
+    function showCatalog() {
+      document.getElementById('detail-view').style.display = 'none';
+      document.getElementById('catalog-view').style.display = 'block';
     }
 
-    function submitForm() {
+    function submitLead() {
       const name = document.getElementById('name').value.trim();
       const phone = document.getElementById('phone').value.trim();
-
       if (!name || !phone) {
         Telegram.WebApp.showAlert('Укажите имя и телефон');
         return;
       }
 
-      formData.name = name;
-      formData.phone = phone;
-
       const message = 
-        `🔔 Новая заявка\n` +
-        `Имя: ${formData.name}\n` +
-        `Телефон: ${formData.phone}\n` +
-        `Бюджет: ${formData.budget}\n` +
-        `Район: ${formData.district}\n` +
-        `Комнат: ${formData.rooms}`;
+        `🔔 Заявка на показ\n` +
+        `ЖК: ${selectedComplex.title || '—'}\n` +
+        `Район: ${selectedComplex.district || '—'}\n` +
+        `Имя: ${name}\n` +
+        `Телефон: ${phone}`;
 
-      // === ЗАМЕНИ НА СВОИ ДАННЫЕ ===
-      const botToken = '8586234781:AAE87Am-arpkyk4tMcN44SYqSMJ8XDYrJKo';   // токен твоего бота
-      const chatId = '896319728';       // твой Telegram ID
-      // =============================
-
-      const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=HTML`;
-
-      fetch(url)
-        .then(() => {
-          Telegram.WebApp.showAlert('Спасибо! Подборку отправим в ближайшее время.');
-          setTimeout(() => Telegram.WebApp.close(), 2000);
-        })
-        .catch(() => {
-          Telegram.WebApp.showAlert('Ошибка. Попробуйте позже.');
-        });
+      fetch(`https://api.telegram.org/bot${TELEGRAM_CONFIG.botToken}/sendMessage`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({chat_id: TELEGRAM_CONFIG.chatId, text: message})
+      }).then(() => {
+        Telegram.WebApp.showAlert('Спасибо! Менеджер свяжется с вами.');
+        setTimeout(() => Telegram.WebApp.close(), 2000);
+      });
     }
 
-    // Начинаем с шага 1
-    showStep(1);
+    loadComplexes();
   </script>
 </body>
 </html>
